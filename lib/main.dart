@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart'; // Updated import statement
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 void main() {
   runApp(const DispatcherTest1App());
@@ -165,7 +166,8 @@ class DispatcherScreen extends StatefulWidget {
 class _DispatcherScreenState extends State<DispatcherScreen> {
   Position? _currentPosition; // Initialize _currentPosition to null
   final MapController _mapController = MapController();
-  double zoom = 20;
+  double zoom = 5;
+  List<dynamic> _searchResults = [];
 
   String _currentPage = 'Map';
   Color primary = const Color.fromARGB(255, 62, 99, 137);
@@ -261,18 +263,24 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
   }
 
   Widget _receiveCallButton() {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          _showReceiveCallPage = !_showReceiveCallPage;
-          _showDiscussion = _showReceiveCallPage;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: primary,
-      ),
-      child: Text(_showReceiveCallPage ? 'End Call' : 'Receive Call'),
+    return Column(
+      children: [
+        SizedBox(height: 60), // Add some space between the text and the button
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _showReceiveCallPage = !_showReceiveCallPage;
+              _showDiscussion = _showReceiveCallPage;
+            });
+          },
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: primary,
+            padding: EdgeInsets.symmetric(vertical: 14, horizontal: 70),
+          ),
+          child: Text(_showReceiveCallPage ? 'End Call' : 'Receive Call'),
+        ),
+      ],
     );
   }
 
@@ -402,7 +410,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                'Call Information', // Title for the first area
+                                'Call Information',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18.0,
@@ -418,7 +426,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                'Features', // Title for the first area
+                                'Features',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18.0,
@@ -427,49 +435,45 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                               ),
                             ),
                             _receiveCallButton(),
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const LoginPage(),
-                                    ),
-                                  );
-                                },
-
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: primary,
+                            SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () {
+                                // Add functionality for the third button
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: primary,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 70),
+                              ),
+                              child: Text(
+                                '  History      ',
+                                style: TextStyle(
+                                  color: Colors.white,
                                 ),
-                                child: Text(
-                                    'Log Out'), // Change button text to 'Log Out'
                               ),
                             ),
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  // Add functionality for the third button
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: primary,
+                            SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginPage(),
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: primary,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 70),
+                              ),
+                              child: Text(
+                                '    Log Out    ',
+                                style: TextStyle(
+                                  color: Colors.white,
                                 ),
-                                child: Text('Call history'),
                               ),
                             ),
-                            /*Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  // Add functionality for the fourth button
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: primary,
-                                ),
-                                child: Text('Button 4'),
-                              ),
-                            ),*/
                           ],
                         ),
                 ),
@@ -480,7 +484,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                       width: double.infinity,
                       height: double.infinity,
                       child: Image.asset(
-                        'image/AidNow8.png',
+                        'image/AidNow9.png',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -488,7 +492,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
               ],
             ),
           ),
-          if (_showReceiveCallPage) // Render the VerticalDivider only if _showReceiveCallPage is true
+          if (_showReceiveCallPage)
             const VerticalDivider(thickness: 1, width: 1),
           Expanded(
             flex: 2,
@@ -509,7 +513,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                     ],
                   ),
                 ),
-                if (_showReceiveCallPage) // Render the VerticalDivider only if _showReceiveCallPage is true
+                if (_showReceiveCallPage)
                   const Divider(thickness: 1, height: 1),
                 Expanded(
                   flex: _showDiscussion ? 6 : 3,
@@ -608,8 +612,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                         )
                       : SizedBox(),
                 ),
-                SizedBox(height: 20), // Add spacing between the widgets
-                // Add the other three buttons here
+                SizedBox(height: 20),
               ],
             ),
           ),
