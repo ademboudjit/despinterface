@@ -19,6 +19,7 @@ class DispatcherTest1App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dispatcher Test 1',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -164,16 +165,17 @@ class DispatcherScreen extends StatefulWidget {
 }
 
 class _DispatcherScreenState extends State<DispatcherScreen> {
-  Position? _currentPosition; // Initialize _currentPosition to null
+  // Initialize _currentPosition to null
+  Position? _currentPosition;
   final MapController _mapController = MapController();
-  double zoom = 5;
+  double zoom = 20;
   List<dynamic> _searchResults = [];
-
   String _currentPage = 'Map';
   Color primary = const Color.fromARGB(255, 62, 99, 137);
   bool _showReceiveCallPage = false;
-  // Define a boolean variable to track the visibility of the Discussion section
-  bool _showDiscussion = false;
+  bool _showDiscussion =
+      false; // Define a boolean variable to track the visibility of the Discussion section
+  List<User> usersQueue = []; // Queue to store users
 
   void _logout(BuildContext context) {
     Navigator.popUntil(context, ModalRoute.withName('/'));
@@ -183,6 +185,100 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    // Add users to the queue
+    _initializeUserQueue();
+  }
+
+  void showUserListPanel(BuildContext context, List<User2> users) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          color: Color(0xFF333333),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(
+                  'User List',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 62, 99, 137),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                tileColor: const Color.fromARGB(255, 62, 99, 137),
+                onTap: () {}, // Optional: Add functionality to the list tile
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(
+                        users[index].name,
+                        style: TextStyle(
+                          color: Colors.white, // Set text color to white
+                        ),
+                      ),
+                      // subtitle: Text(users[index].details),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              // Add functionality to call the user
+                            },
+                            icon: Icon(Icons.phone),
+                            color: Color.fromARGB(255, 62, 99, 137),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              // Add functionality to report the user
+                            },
+                            icon: Icon(Icons.report),
+                            color: Color.fromARGB(255, 62, 99, 137),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _initializeUserQueue() {
+    // Add users to the queue
+    usersQueue.add(
+      User(
+        name: 'Boudjit Adem',
+        phoneNumber: '0799717290',
+        bloodType: 'AB+',
+        age: 20,
+        gender: 'Male',
+        birthday: 'May 4, 2003',
+        address: '10 street Hamlaoui, Constantine',
+      ),
+      // Add more users as needed
+    );
+    usersQueue.add(
+      User(
+        name: 'Chelghoum Lyna',
+        phoneNumber: '123-456-7890',
+        bloodType: 'B+',
+        age: 30,
+        gender: 'Female',
+        birthday: 'September 17, 1994',
+        address: '123 Main St, City, Country',
+      ),
+      // Add more users as needed
+    );
   }
 
   void _getCurrentLocation() async {
@@ -292,6 +388,9 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
           _showDiscussion = false; // Hide discussion area when ending call
           messages.clear();
           _currentMessage = '';
+          if (usersQueue.isNotEmpty) {
+            usersQueue.add(usersQueue.removeAt(0));
+          }
         });
       },
       style: ElevatedButton.styleFrom(
@@ -329,17 +428,10 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
           ),
         ),
         SizedBox(height: 10),
-        _voluntaryItem(' John Doe'),
-        _voluntaryItem(' Jane Smith'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
-        _voluntaryItem(' Olivia Martinez'),
+        _voluntaryItem(' Touati nassim  '),
+        _voluntaryItem(' chelghoum aya '),
+        _voluntaryItem(' lanani ghania '),
+        _voluntaryItem(' Hamma souheila '),
       ],
     );
   }
@@ -418,7 +510,10 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                                 ),
                               ),
                             ),
-                            ReceiveCallPage(_endCallButton()),
+                            ReceiveCallPage(
+                                _endCallButton(),
+                                usersQueue
+                                    .first), //ReceiveCallPage(_endCallButton()),
                           ],
                         )
                       : Column(
@@ -439,6 +534,7 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                             TextButton(
                               onPressed: () {
                                 // Add functionality for the third button
+                                showUserListPanel(context, users);
                               },
                               style: TextButton.styleFrom(
                                 backgroundColor: primary,
@@ -662,24 +758,24 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
                 children: [
                   openStreetMapTileLayer,
                   MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _currentPosition != null
-                            ? LatLng(
-                                _currentPosition!.latitude - 1.0651983,
-                                _currentPosition!.longitude + 128.7245,
-                              )
-                            : const LatLng(28.0289837, 1.6666663),
-                        width: 60,
-                        height: 60,
-                        alignment: Alignment.centerLeft,
-                        child: const Icon(
-                          Icons.location_pin,
-                          size: 60,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
+                    markers: _currentPosition != null
+                        ? [
+                            Marker(
+                              point: LatLng(
+                                _currentPosition!.latitude,
+                                _currentPosition!.longitude,
+                              ),
+                              width: 60,
+                              height: 60,
+                              alignment: Alignment.centerLeft,
+                              child: const Icon(
+                                Icons.location_pin,
+                                size: 60,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ]
+                        : [],
                   ),
                 ],
               ),
@@ -715,8 +811,10 @@ class _DispatcherScreenState extends State<DispatcherScreen> {
 
 class ReceiveCallPage extends StatelessWidget {
   final Widget endCallButton;
+  final User user;
 
-  const ReceiveCallPage(this.endCallButton, {super.key});
+  const ReceiveCallPage(this.endCallButton, this.user, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -735,8 +833,8 @@ class ReceiveCallPage extends StatelessWidget {
                     color: Color.fromRGBO(62, 99, 137, 1)),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   CircleAvatar(
@@ -746,42 +844,41 @@ class ReceiveCallPage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Name: John Doe',
+                    'Name: ${user.name}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   SizedBox(height: 5),
                   Text(
-                    'Phone Number: 123-456-7890',
+                    'Phone Number: ${user.phoneNumber}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   Text(
-                    'Blood Type: O+',
+                    'Blood Type: ${user.bloodType}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   Text(
-                    'Age: 30',
+                    'Age: ${user.age}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   Text(
-                    'Gender: Male',
+                    'Gender: ${user.gender}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   Text(
-                    'Birthday: January 1, 1994',
+                    'Birthday: ${user.birthday}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
                   Text(
-                    'Address: 123 Main St, City, Country',
+                    'Address: ${user.address}',
                     style: TextStyle(
                         color: Colors.white), // Text color changed to white
                   ),
-                  // Add more user information fields as needed...
                 ],
               ),
             ),
@@ -817,7 +914,7 @@ class ReceiveCallPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             endCallButton,
           ],
         ),
@@ -830,3 +927,38 @@ TileLayer get openStreetMapTileLayer => TileLayer(
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'dev.fleaflet.flutter_map.example',
     );
+
+class User {
+  String name;
+  String phoneNumber;
+  String bloodType;
+  int age;
+  String gender;
+  String birthday;
+  String address;
+
+  User({
+    required this.name,
+    required this.phoneNumber,
+    required this.bloodType,
+    required this.age,
+    required this.gender,
+    required this.birthday,
+    required this.address,
+  });
+}
+
+class User2 {
+  final String name;
+  //final String details;
+
+  User2(this.name);
+}
+
+List<User2> users = [
+  User2('Larekeb khadidja '),
+  User2('Soussi heithem '),
+  User2('Zaatout doua '),
+
+  // Add more users as needed
+];
